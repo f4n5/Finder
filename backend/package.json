@@ -1,0 +1,14 @@
+{
+  "name": "shiv-cleaner-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Cleaner API for Shiv Finder — strip malware / key systems from executor binaries",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
