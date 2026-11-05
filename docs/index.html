@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shiv Finder — Executors · Externals · Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070b;
+  --bg2: #0c0c12;
+  --bg3: #12121a;
+  --bg4: #1a1a24;
+  --border: #1e1e2a;
+  --border2: #2a2a3a;
+  --text: #e8e8f0;
+  --text2: #9898a8;
+  --text3: #686878;
+  --accent: #7c5cff;
+  --accent2: #9b7eff;
+  --accent-dim: rgba(124, 92, 255, 0.15);
+  --green: #22c55e;
+  --green-dim: rgba(34, 197, 94, 0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239, 68, 68, 0.12);
+  --yellow: #eab308;
+  --yellow-dim: rgba(234, 179, 8, 0.12);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59, 130, 246, 0.12);
+  --orange: #f97316;
+  --orange-dim: rgba(249, 115, 22, 0.12);
+  --cyan: #06b6d4;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --glow: 0 0 40px rgba(124, 92, 255, 0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Background effects */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(124,92,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,92,255,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-glow {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.12;
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-glow-1 { top: -200px; left: -100px; background: var(--accent); }
+.bg-glow-2 { bottom: -200px; right: -100px; background: #4f46e5; }
+
+/* Layout */
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo-icon {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--accent), #4f46e5);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  color: white;
+  box-shadow: var(--glow);
+}
+.logo-text {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.logo-text span { color: var(--accent2); }
+.logo-sub {
+  font-size: 12px;
+  color: var(--text3);
+  font-weight: 400;
+  margin-top: 1px;
+}
+.header-stats {
+  display: flex;
+  gap: 20px;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+.stat-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.stat-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.stat-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 28px;
+  background: var(--bg2);
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  width: fit-content;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text2);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); background: var(--bg3); }
+.tab.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 2px 12px rgba(124, 92, 255, 0.35);
+}
+.tab svg { width: 16px; height: 16px; opacity: 0.8; }
+
+/* Panels */
+.panel { display: none; animation: fadeIn 0.25s ease; }
+.panel.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Search / Filters */
+.toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.search-box {
+  flex: 1;
+  min-width: 220px;
+  position: relative;
+}
+.search-box input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box input:focus { border-color: var(--accent); }
+.search-box input::placeholder { color: var(--text3); }
+.search-box svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--text3);
+  pointer-events: none;
+}
+
+.filter-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 8px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.filter-btn:hover { border-color: var(--border2); color: var(--text); }
+.filter-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent2);
+}
+
+/* Cards grid */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  transition: background 0.2s;
+}
+.card:hover::before { background: linear-gradient(90deg, var(--accent), transparent); }
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.card-name {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.3px;
+}
+.card-version {
+  font-size: 12px;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 3px;
+}
+.card-type {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.card-type.internal { background: var(--blue-dim); color: var(--blue); }
+.card-type.external { background: var(--orange-dim); color: var(--orange); }
+.card-type.mobile { background: var(--cyan); color: #0a0a0f; background: rgba(6,182,212,0.15); color: var(--cyan); }
+.card-type.mac { background: rgba(168,85,247,0.15); color: #c084fc; }
+
+.card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.badge.working { background: var(--green-dim); color: var(--green); }
+.badge.offline { background: var(--red-dim); color: var(--red); }
+.badge.detected { background: var(--yellow-dim); color: var(--yellow); }
+.badge.undetected { background: var(--green-dim); color: var(--green); }
+.badge.free { background: var(--blue-dim); color: var(--blue); }
+.badge.paid { background: var(--accent-dim); color: var(--accent2); }
+.badge.key { background: var(--orange-dim); color: var(--orange); }
+.badge.clean { background: var(--green-dim); color: var(--green); }
+.badge.malware { background: var(--red-dim); color: var(--red); }
+.badge.caution { background: var(--yellow-dim); color: var(--yellow); }
+
+.card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.meta-item {
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.meta-label {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.meta-value {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.meta-value.high { color: var(--green); }
+.meta-value.mid { color: var(--yellow); }
+.meta-value.low { color: var(--red); }
+
+.card-footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost {
+  background: var(--bg3);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+.card-updated {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text3);
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
+}
+.empty svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.4; }
+
+/* Decompile panel */
+.decompile-zone {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 24px;
+}
+.decompile-zone h2 {
+  font-size: 18px;
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+.decompile-zone p {
+  color: var(--text2);
+  font-size: 14px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.drop-area {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 48px 24px;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+  background: var(--bg3);
+}
+.drop-area:hover, .drop-area.dragover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.drop-area svg {
+  width: 40px;
+  height: 40px;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+.drop-area .drop-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.drop-area .drop-sub {
+  font-size: 13px;
+  color: var(--text3);
+}
+.file-input { display: none; }
+
+.result-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 20px;
+  display: none;
+}
+.result-box.show { display: block; animation: fadeIn 0.3s; }
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.result-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+.result-icon.found { background: var(--green-dim); color: var(--green); }
+.result-icon.unknown { background: var(--yellow-dim); color: var(--yellow); }
+.result-title { font-size: 16px; font-weight: 650; }
+.result-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+.sig-list {
+  display: grid;
+  gap: 8px;
+}
+.sig-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.sig-item .sig-name { font-weight: 500; }
+.sig-item .sig-match {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--green);
+}
+
+/* AI Cleaner panel */
+.ai-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 640px) {
+  .ai-options { grid-template-columns: 1fr; }
+}
+.ai-opt {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+.ai-opt:hover { border-color: var(--border2); }
+.ai-opt.selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.ai-opt h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-opt p {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.4;
+  margin: 0;
+}
+.ai-opt input { position: absolute; opacity: 0; pointer-events: none; }
+
+.api-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-top: 24px;
+}
+.api-section h3 {
+  font-size: 15px;
+  font-weight: 650;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.api-section p {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text2);
+  white-space: pre;
+}
+.code-block .cmt { color: var(--text3); }
+.code-block .key { color: var(--accent2); }
+.code-block .str { color: #86efac; }
+.code-block .num { color: #fcd34d; }
+
+.progress-bar {
+  height: 4px;
+  background: var(--bg4);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 16px;
+  display: none;
+}
+.progress-bar.show { display: block; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  width: 0%;
+  transition: width 0.3s;
+  border-radius: 2px;
+}
+
+/* Status bar */
+.status-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.status-card {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.status-card .sc-label {
+  font-size: 11px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.status-card .sc-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.status-card .sc-value.green { color: var(--green); }
+.status-card .sc-value.yellow { color: var(--yellow); }
+.status-card .sc-value.red { color: var(--red); }
+.status-card .sc-value.accent { color: var(--accent2); }
+
+/* Table view toggle */
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--bg3);
+  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid var(--border);
+}
+.view-btn {
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.view-btn.active { background: var(--bg4); color: var(--text); }
+.view-btn svg { width: 16px; height: 16px; display: block; }
+
+/* Table */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg2);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--bg3);
+  color: var(--text3);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.015); }
+.td-name { font-weight: 600; }
+.td-mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+/* Footer */
+footer {
+  margin-top: 60px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text3);
+}
+footer a { color: var(--text2); text-decoration: none; }
+footer a:hover { color: var(--accent2); }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-color: var(--green); }
+.toast.error { border-color: var(--red); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-stats { display: none; }
+  .tabs { width: 100%; }
+  .tab { flex: 1; justify-content: center; padding: 10px 12px; font-size: 13px; }
+  .cards { grid-template-columns: 1fr; }
+  .card-meta { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">S</div>
+      <div>
+        <div class="logo-text">Shiv <span>Finder</span></div>
+        <div class="logo-sub">executors · externals · live status</div>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill"><span class="stat-dot green"></span> <span id="hdr-working">0</span> working</div>
+      <div class="stat-pill"><span class="stat-dot yellow"></span> <span id="hdr-detected">0</span> detected</div>
+      <div class="stat-pill"><span class="stat-dot red"></span> <span id="hdr-offline">0</span> offline</div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="online">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Online
+    </button>
+    <button class="tab" data-tab="decompile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      Identify
+    </button>
+    <button class="tab" data-tab="cleaner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      AI Cleaner
+    </button>
+  </nav>
+
+  <!-- ===================== ONLINE TAB ===================== -->
+  <div class="panel active" id="panel-online">
+    <div class="status-bar">
+      <div class="status-card">
+        <div class="sc-label">Total Tracked</div>
+        <div class="sc-value accent" id="stat-total">0</div>
+      </div>
+      <div class="status-card">
+        <div class="sc-label">Working</div>
+        <div class="sc-value green" id="stat-working">0</div>
+      </div>
+      <div class="status-card">
+        <div class="sc-label">Detected</div>
+        <div class="sc-value yellow" id="stat-detected">0</div>
+      </div>
+      <div class="status-card">
+        <div class="sc-label">Offline</div>
+        <div class="sc-value red" id="stat-offline">0</div>
+      </div>
+      <div class="status-card">
+        <div class="sc-label">Free / Keyless</div>
+        <div class="sc-value" id="stat-free">0</div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="search" placeholder="Search executors, externals...">
+      </div>
+      <div class="filter-group" id="type-filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="internal">Internal</button>
+        <button class="filter-btn" data-filter="external">External</button>
+        <button class="filter-btn" data-filter="mobile">Mobile</button>
+        <button class="filter-btn" data-filter="mac">Mac</button>
+      </div>
+      <div class="filter-group" id="price-filters">
+        <button class="filter-btn active" data-price="all">Any price</button>
+        <button class="filter-btn" data-price="free">Free</button>
+        <button class="filter-btn" data-price="paid">Paid</button>
+        <button class="filter-btn" data-price="key">Key system</button>
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="cards" title="Cards">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="view-btn" data-view="table" title="Table">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="cards" id="cards-grid"></div>
+    <div class="table-wrap" id="table-view" style="display:none">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Detection</th>
+            <th>UNC</th>
+            <th>sUNC</th>
+            <th>Price</th>
+            <th>Clean</th>
+            <th>Updated</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===================== DECOMPILE / IDENTIFY TAB ===================== -->
+  <div class="panel" id="panel-decompile">
+    <div class="decompile-zone">
+      <h2>Identify Executor</h2>
+      <p>Drop an .exe, .dll, or .zip. The local signature engine matches strings, PE resources, and known packers to recognize which executor it is — and flags common malware patterns.</p>
+      <div class="drop-area" id="id-drop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div class="drop-title">Drop file here or click to browse</div>
+        <div class="drop-sub">.exe · .dll · .zip · max 80 MB</div>
+        <input type="file" class="file-input" id="id-file" accept=".exe,.dll,.zip,.bin">
+      </div>
+      <div class="result-box" id="id-result">
+        <div class="result-header">
+          <div class="result-icon found" id="id-icon">?</div>
+          <div>
+            <div class="result-title" id="id-title">—</div>
+            <div class="result-sub" id="id-sub">—</div>
+          </div>
+        </div>
+        <div class="sig-list" id="id-sigs"></div>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Signature database (client-side)
+      </h3>
+      <p>Matches are done entirely in the browser against a built-in signature set. No file leaves your machine for identification. For deeper analysis (unpacking, full PE parse) wire a backend.</p>
+      <div class="code-block"><span class="cmt">// Example signatures used by the identifier</span>
+{
+  <span class="key">"Wave"</span>: { <span class="key">"strings"</span>: [<span class="str">"getwave"</span>, <span class="str">"WaveExecutor"</span>], <span class="key">"confidence"</span>: <span class="num">0.92</span> },
+  <span class="key">"Volt"</span>: { <span class="key">"strings"</span>: [<span class="str">"VoltTeam"</span>, <span class="str">"AWP"</span>], <span class="key">"confidence"</span>: <span class="num">0.88</span> },
+  <span class="key">"Xeno"</span>: { <span class="key">"strings"</span>: [<span class="str">"XenoExecutor"</span>, <span class="str">"xeno.gg"</span>], <span class="key">"confidence"</span>: <span class="num">0.90</span> },
+  <span class="key">"Madium"</span>: { <span class="key">"strings"</span>: [<span class="str">"Madium"</span>, <span class="str">"madium.gg"</span>], <span class="key">"confidence"</span>: <span class="num">0.91</span> },
+  <span class="key">"Serotonin"</span>: { <span class="key">"strings"</span>: [<span class="str">"Serotonin"</span>, <span class="str">"external"</span>], <span class="key">"confidence"</span>: <span class="num">0.85</span> }
+}</div>
+    </div>
+  </div>
+
+  <!-- ===================== AI CLEANER TAB ===================== -->
+  <div class="panel" id="panel-cleaner">
+    <div class="decompile-zone">
+      <h2>AI Cleaner</h2>
+      <p>Upload an executor .exe / .dll / .zip. Choose what to strip. The file is sent to your API; the model removes malware payloads or key-system checks while keeping injection / DLL logic intact.</p>
+
+      <div class="ai-options">
+        <label class="ai-opt selected" id="opt-malware">
+          <input type="radio" name="clean-mode" value="malware" checked>
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Strip malware
+          </h3>
+          <p>Remove stealers, persistence, C2 beacons, Discord webhooks, clipboard hooks. Leaves inject + script engine alone.</p>
+        </label>
+        <label class="ai-opt" id="opt-key">
+          <input type="radio" name="clean-mode" value="key">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Remove key system
+          </h3>
+          <p>Patch / nop key checks, license HTTP calls, HWID lock. Crack-style pass so the executor runs without a key.</p>
+        </label>
+      </div>
+
+      <div class="drop-area" id="clean-drop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div class="drop-title">Drop file here or click to browse</div>
+        <div class="drop-sub">.exe · .dll · .zip · processed via your API</div>
+        <input type="file" class="file-input" id="clean-file" accept=".exe,.dll,.zip">
+      </div>
+
+      <div class="progress-bar" id="clean-progress">
+        <div class="progress-fill" id="clean-fill"></div>
+      </div>
+
+      <div class="result-box" id="clean-result">
+        <div class="result-header">
+          <div class="result-icon found">✓</div>
+          <div>
+            <div class="result-title" id="clean-title">Clean complete</div>
+            <div class="result-sub" id="clean-sub">Ready to download</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-primary" id="clean-download">Download cleaned file</button>
+          <button class="btn btn-ghost" id="clean-report">View report</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>
+        API instructions (wire this up)
+      </h3>
+      <p>
+        Point the cleaner at your backend. The frontend already posts multipart FormData to <code style="color:var(--accent2)">/api/clean</code>.
+        Implement that route on your server / serverless function. Below is the contract and a minimal handler sketch.
+      </p>
+      <div class="code-block"><span class="cmt">// === REQUEST ===</span>
+<span class="cmt">// POST /api/clean</span>
+<span class="cmt">// Content-Type: multipart/form-data</span>
+<span class="cmt">// fields:</span>
+<span class="cmt">//   file   : binary (.exe / .dll / .zip)</span>
+<span class="cmt">//   mode   : "malware" | "key"</span>
+<span class="cmt">//   name   : original filename</span>
+
+<span class="cmt">// === RESPONSE (JSON) ===</span>
+{
+  <span class="key">"ok"</span>: <span class="num">true</span>,
+  <span class="key">"mode"</span>: <span class="str">"malware"</span>,
+  <span class="key">"removed"</span>: [
+    <span class="str">"discord_webhook"</span>,
+    <span class="str">"clipboard_hook"</span>,
+    <span class="str">"startup_persistence"</span>
+  ],
+  <span class="key">"kept"</span>: [
+    <span class="str">"injection_stub"</span>,
+    <span class="str">"script_engine"</span>,
+    <span class="str">"ui_module"</span>
+  ],
+  <span class="key">"download_url"</span>: <span class="str">"https://your-cdn/cleaned/abc123.exe"</span>,
+  <span class="key">"report"</span>: <span class="str">"Stripped 3 malware modules. Injection path untouched."</span>
+}
+
+<span class="cmt">// === EXAMPLE NODE HANDLER (Express + OpenAI / local LLM) ===</span>
+app.post(<span class="str">'/api/clean'</span>, upload.single(<span class="str">'file'</span>), async (req, res) => {
+  const mode = req.body.mode; <span class="cmt">// "malware" | "key"</span>
+  const buf  = req.file.buffer;
+
+  <span class="cmt">// 1. extract / disasm relevant sections</span>
+  <span class="cmt">// 2. build prompt for the model:</span>
+  const prompt = mode === <span class="str">'malware'</span>
+    ? <span class="str">`Identify and list offsets of stealers, webhooks, persistence.
+       Do NOT touch injection, DLL mapping, or Luau VM code.
+       Return JSON list of patches (offset, length, replace_with_nop).`</span>
+    : <span class="str">`Identify key-check / license HTTP / HWID lock routines.
+       Return patches that force success path. Leave inject alone.`</span>;
+
+  <span class="cmt">// 3. call your model (OpenAI, Claude, local GGUF, etc.)</span>
+  const patches = await callModel(prompt, buf);
+
+  <span class="cmt">// 4. apply patches, write new binary, upload to storage</span>
+  const cleaned = applyPatches(buf, patches);
+  const url = await uploadToStorage(cleaned);
+
+  res.json({
+    ok: <span class="num">true</span>,
+    mode,
+    removed: patches.map(p => p.label),
+    kept: [<span class="str">'injection_stub'</span>, <span class="str">'script_engine'</span>],
+    download_url: url,
+    report: `Applied ${patches.length} patches.`
+  });
+});
+
+<span class="cmt">// === FRONTEND CONFIG ===</span>
+<span class="cmt">// Change CLEAN_API in the script tag below to your endpoint.</span>
+<span class="cmt">// const CLEAN_API = 'https://your-api.example.com/api/clean';</span></div>
+    </div>
+  </div>
+
+  <footer>
+    <div>Shiv Finder · status data aggregated from public trackers · not affiliated with any executor team</div>
+    <div>signatures + UI local · cleaner requires your API</div>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   DATA — Nov 2026 snapshot from public status trackers
+   Update these when you wire a live API
+   ========================================================= */
+const EXECUTORS = [
+  {
+    name: "Volt",
+    version: "1.3.20.2",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "paid",
+    priceLabel: "$5.99 / week",
+    clean: "clean",
+    official: "https://volt.gg",
+    updated: "hours ago",
+    platform: "Windows",
+    notes: "Hyperion emulation, VSCode-style UI, multi-instance"
+  },
+  {
+    name: "Potassium",
+    version: "2.6.0",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "paid",
+    priceLabel: "$22.99 lifetime",
+    clean: "clean",
+    official: "https://potassium.gg",
+    updated: "7d ago",
+    platform: "Windows",
+    notes: "Lifetime, internal, fast updates"
+  },
+  {
+    name: "Wave",
+    version: "NEW-1.6.0",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "paid",
+    priceLabel: "$4.99 / week",
+    clean: "clean",
+    official: "https://getwave.gg",
+    updated: "6d ago",
+    platform: "Windows",
+    notes: "Long-running paid, full sUNC"
+  },
+  {
+    name: "Synapse Z",
+    version: "1.0.3.9",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 98,
+    price: "paid",
+    priceLabel: "$3.99 / week",
+    clean: "clean",
+    official: "https://synapse.gg",
+    updated: "3d ago",
+    platform: "Windows",
+    notes: "Spiritual successor branding"
+  },
+  {
+    name: "Madium",
+    version: "2.8.2",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 98,
+    sunc: 100,
+    price: "key",
+    priceLabel: "Free · Key system",
+    clean: "clean",
+    official: "https://madium.gg",
+    updated: "5d ago",
+    platform: "Windows",
+    notes: "Free high-sUNC, key system"
+  },
+  {
+    name: "Real",
+    version: "3.0.1",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "key",
+    priceLabel: "Free · Key system",
+    clean: "clean",
+    official: "https://real.gg",
+    updated: "6d ago",
+    platform: "Windows",
+    notes: "Free, decompiler, multi-inject"
+  },
+  {
+    name: "Velocity",
+    version: "1.5.7",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "key",
+    priceLabel: "Free · Key system",
+    clean: "clean",
+    official: "https://velocity.gg",
+    updated: "1d ago",
+    platform: "Windows",
+    notes: "Free, multi-instance"
+  },
+  {
+    name: "Volcano",
+    version: "v3.2.9.4",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 96,
+    price: "key",
+    priceLabel: "Free · Key system",
+    clean: "clean",
+    official: "https://volcano.gg",
+    updated: "1d ago",
+    platform: "Windows",
+    notes: "Free, decompiler"
+  },
+  {
+    name: "Solara",
+    version: "0.1.8b",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 66,
+    sunc: 59,
+    price: "free",
+    priceLabel: "Free · No key",
+    clean: "caution",
+    official: "https://getsolara.dev",
+    updated: "4d ago",
+    platform: "Windows",
+    notes: "Keyless free, lower sUNC"
+  },
+  {
+    name: "Xeno",
+    version: "1.3.65",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 84,
+    sunc: 40,
+    price: "free",
+    priceLabel: "Free · No key",
+    clean: "caution",
+    official: "https://xeno.gg",
+    updated: "9d ago",
+    platform: "Windows",
+    notes: "Popular free, lower script score — watch mirrors"
+  },
+  {
+    name: "SirHurt",
+    version: "V5.478",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "paid",
+    priceLabel: "$2.80 / week",
+    clean: "clean",
+    official: "https://sirhurt.net",
+    updated: "9d ago",
+    platform: "Windows",
+    notes: "Cheap weekly, high sUNC"
+  },
+  {
+    name: "Lucid",
+    version: "1.0.3",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 98,
+    sunc: 96,
+    price: "paid",
+    priceLabel: "$5.99 / week",
+    clean: "clean",
+    official: "https://lucid.gg",
+    updated: "6d ago",
+    platform: "Windows",
+    notes: "Decompiler, multi-inject"
+  },
+  {
+    name: "Isaeva",
+    version: "2.6.4",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "paid",
+    priceLabel: "$3.99 / week",
+    clean: "clean",
+    official: "https://isaeva.gg",
+    updated: "5d ago",
+    platform: "Windows",
+    notes: "Decompiler, multi"
+  },
+  {
+    name: "Lynx",
+    version: "0.745",
+    type: "internal",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "paid",
+    priceLabel: "$14.99 lifetime",
+    clean: "clean",
+    official: "https://lynx.gg",
+    updated: "2d ago",
+    platform: "Windows",
+    notes: "Lifetime option"
+  },
+  {
+    name: "Serotonin",
+    version: "v2",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "paid",
+    priceLabel: "$9.49 / month",
+    clean: "clean",
+    official: "https://serotonin.gg",
+    updated: "9d ago",
+    platform: "Windows",
+    notes: "External — no UNC/sUNC, low detect surface"
+  },
+  {
+    name: "Matcha",
+    version: "v2",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "paid",
+    priceLabel: "$9.99 lifetime",
+    clean: "clean",
+    official: "https://matcha.gg",
+    updated: "9d ago",
+    platform: "Windows",
+    notes: "External lifetime"
+  },
+  {
+    name: "Severe",
+    version: "v2",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "paid",
+    priceLabel: "$9.99 lifetime",
+    clean: "clean",
+    official: "https://severe.gg",
+    updated: "8d ago",
+    platform: "Windows",
+    notes: "External"
+  },
+  {
+    name: "Lumen",
+    version: "1.0.9",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "paid",
+    priceLabel: "$9.99 lifetime",
+    clean: "clean",
+    official: "https://lumen.gg",
+    updated: "8d ago",
+    platform: "Windows",
+    notes: "External"
+  },
+  {
+    name: "Matrix Hub",
+    version: "v3",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "paid",
+    priceLabel: "$4.99 lifetime",
+    clean: "clean",
+    official: "https://matrixhub.gg",
+    updated: "9d ago",
+    platform: "Windows",
+    notes: "Budget external"
+  },
+  {
+    name: "Axis",
+    version: "0.5.2",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "paid",
+    priceLabel: "$8.99 / month",
+    clean: "clean",
+    official: "https://axis.gg",
+    updated: "7d ago",
+    platform: "Windows",
+    notes: "External monthly"
+  },
+  {
+    name: "DX9WARE V2",
+    version: "1.1.226",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "paid",
+    priceLabel: "$15 lifetime",
+    clean: "clean",
+    official: "https://dx9ware.com",
+    updated: "9d ago",
+    platform: "Windows",
+    notes: "DX9 external"
+  },
+  {
+    name: "Photon",
+    version: "7.1",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "paid",
+    priceLabel: "$20 lifetime",
+    clean: "clean",
+    official: "https://photon.gg",
+    updated: "9d ago",
+    platform: "Windows",
+    notes: "Premium external"
+  },
+  {
+    name: "Madius",
+    version: "1.11.8-beta",
+    type: "external",
+    status: "working",
+    detection: "undetected",
+    unc: null,
+    sunc: null,
+    price: "key",
+    priceLabel: "Free · Key system",
+    clean: "clean",
+    official: "https://madius.gg",
+    updated: "6d ago",
+    platform: "Windows",
+    notes: "Free external with key"
+  },
+  {
+    name: "MacSploit",
+    version: "745.1",
+    type: "mac",
+    status: "working",
+    detection: "undetected",
+    unc: 99,
+    sunc: 100,
+    price: "paid",
+    priceLabel: "$9.99 lifetime",
+    clean: "clean",
+    official: "https://macsploit.com",
+    updated: "6d ago",
+    platform: "macOS",
+    notes: "Native Mac, full sUNC"
+  },
+  {
+    name: "Opiumware",
+    version: "v2.5.9-hotfix1",
+    type: "mac",
+    status: "working",
+    detection: "undetected",
+    unc: 99,
+    sunc: 100,
+    price: "free",
+    priceLabel: "Free · No key",
+    clean: "clean",
+    official: "https://opiumware.com",
+    updated: "2d ago",
+    platform: "macOS",
+    notes: "Free Mac keyless"
+  },
+  {
+    name: "Delta",
+    version: "2.729.840",
+    type: "mobile",
+    status: "working",
+    detection: "detected",
+    unc: 99,
+    sunc: 100,
+    price: "key",
+    priceLabel: "Free · Key system",
+    clean: "caution",
+    official: "https://deltaexploits.gg",
+    updated: "varies",
+    platform: "Android / iOS",
+    notes: "Most popular mobile — Android stronger than iOS right now"
+  }
+];
+
+/* Signature set for Identify tab */
+const SIGNATURES = [
+  { name: "Wave", strings: ["getwave", "WaveExecutor", "Team Wave", "wave.gg"], confidence: 0.92 },
+  { name: "Volt", strings: ["VoltTeam", "VoltExecutor", "AWP.GG", "volt.gg"], confidence: 0.90 },
+  { name: "Xeno", strings: ["XenoExecutor", "xeno.gg", "XenoInject"], confidence: 0.91 },
+  { name: "Madium", strings: ["Madium", "madium.gg", "MadiumUI"], confidence: 0.90 },
+  { name: "Solara", strings: ["Solara", "getsolara", "SolaraExecutor"], confidence: 0.88 },
+  { name: "Serotonin", strings: ["Serotonin", "sero_external", "SerotoninExt"], confidence: 0.87 },
+  { name: "Matcha", strings: ["Matcha", "matcha.gg", "MatchaExternal"], confidence: 0.86 },
+  { name: "Potassium", strings: ["Potassium", "potassium.gg", "PermPotassium"], confidence: 0.89 },
+  { name: "Delta", strings: ["DeltaExecutor", "deltaexploits", "DeltaMobile"], confidence: 0.90 },
+  { name: "Synapse Z", strings: ["SynapseZ", "Synapse Z", "synz_"], confidence: 0.85 },
+  { name: "MacSploit", strings: ["MacSploit", "macsploit"], confidence: 0.93 },
+  { name: "Opiumware", strings: ["Opiumware", "opiumware"], confidence: 0.88 },
+  { name: "Volcano", strings: ["Volcano", "volcano.gg", "VolcanoExec"], confidence: 0.86 },
+  { name: "Velocity", strings: ["VelocityExec", "velocity.gg"], confidence: 0.85 },
+  { name: "Real", strings: ["RealExecutor", "real.gg", "RealInject"], confidence: 0.84 },
+  { name: "SirHurt", strings: ["SirHurt", "sirhurt.net"], confidence: 0.90 },
+  /* malware / stealer markers */
+  { name: "MALWARE: Marsalek stealer", strings: ["marsalek", "Marsalek", "discord.com/api/webhooks"], confidence: 0.95, malware: true },
+  { name: "MALWARE: Discord webhook", strings: ["discord.com/api/webhooks", "discordapp.com/api/webhooks"], confidence: 0.80, malware: true },
+  { name: "MALWARE: Clipboard hijack", strings: ["OpenClipboard", "SetClipboardData", "clipboard_hook"], confidence: 0.70, malware: true },
+  { name: "MALWARE: Startup persist", strings: ["Software\\Microsoft\\Windows\\CurrentVersion\\Run", "schtasks /create"], confidence: 0.75, malware: true }
+];
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let currentType = "all";
+let currentPrice = "all";
+let currentView = "cards";
+let searchQuery = "";
+
+/* Change this to your real endpoint */
+const CLEAN_API = "http://127.0.0.1:8790/api/clean";
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function scoreClass(n) {
+  if (n === null || n === undefined) return "";
+  if (n >= 95) return "high";
+  if (n >= 70) return "mid";
+  return "low";
+}
+
+function scoreText(n) {
+  if (n === null || n === undefined) return "—";
+  return n + "%";
+}
+
+function filtered() {
+  return EXECUTORS.filter(e => {
+    if (currentType !== "all" && e.type !== currentType) return false;
+    if (currentPrice !== "all" && e.price !== currentPrice) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const hay = (e.name + " " + e.platform + " " + (e.notes || "") + " " + e.priceLabel).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderCards() {
+  const list = filtered();
+  const grid = document.getElementById("cards-grid");
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><div>No matches</div></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(e => `
+    <div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${e.name}</div>
+          <div class="card-version">${e.version} · ${e.platform}</div>
+        </div>
+        <span class="card-type ${e.type}">${e.type}</span>
+      </div>
+      <div class="card-badges">
+        <span class="badge ${e.status}">${e.status}</span>
+        <span class="badge ${e.detection}">${e.detection}</span>
+        <span class="badge ${e.price}">${e.price === "key" ? "key system" : e.price}</span>
+        <span class="badge ${e.clean}">${e.clean}</span>
+      </div>
+      <div class="card-meta">
+        <div class="meta-item">
+          <div class="meta-label">UNC</div>
+          <div class="meta-value ${scoreClass(e.unc)}">${scoreText(e.unc)}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">sUNC</div>
+          <div class="meta-value ${scoreClass(e.sunc)}">${scoreText(e.sunc)}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Price</div>
+          <div class="meta-value" style="font-size:12px;font-family:Inter,sans-serif">${e.priceLabel}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Updated</div>
+          <div class="meta-value" style="font-size:12px;font-family:Inter,sans-serif">${e.updated}</div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="${e.official}" target="_blank" rel="noopener">Official site</a>
+        <button class="btn btn-ghost" onclick="copyLink('${e.official}')">Copy</button>
+        <span class="card-updated">${e.notes ? e.notes.slice(0, 42) + (e.notes.length > 42 ? "…" : "") : ""}</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderTable() {
+  const list = filtered();
+  const body = document.getElementById("table-body");
+  body.innerHTML = list.map(e => `
+    <tr>
+      <td class="td-name">${e.name}</td>
+      <td><span class="card-type ${e.type}">${e.type}</span></td>
+      <td><span class="badge ${e.status}">${e.status}</span></td>
+      <td><span class="badge ${e.detection}">${e.detection}</span></td>
+      <td class="td-mono ${scoreClass(e.unc)}">${scoreText(e.unc)}</td>
+      <td class="td-mono ${scoreClass(e.sunc)}">${scoreText(e.sunc)}</td>
+      <td>${e.priceLabel}</td>
+      <td><span class="badge ${e.clean}">${e.clean}</span></td>
+      <td>${e.updated}</td>
+      <td><a class="btn btn-ghost" style="padding:6px 10px" href="${e.official}" target="_blank" rel="noopener">Site</a></td>
+    </tr>
+  `).join("");
+}
+
+function renderAll() {
+  if (currentView === "cards") {
+    document.getElementById("cards-grid").style.display = "grid";
+    document.getElementById("table-view").style.display = "none";
+    renderCards();
+  } else {
+    document.getElementById("cards-grid").style.display = "none";
+    document.getElementById("table-view").style.display = "block";
+    renderTable();
+  }
+  updateStats();
+}
+
+function updateStats() {
+  const total = EXECUTORS.length;
+  const working = EXECUTORS.filter(e => e.status === "working").length;
+  const detected = EXECUTORS.filter(e => e.detection === "detected").length;
+  const offline = EXECUTORS.filter(e => e.status === "offline").length;
+  const free = EXECUTORS.filter(e => e.price === "free" || e.price === "key").length;
+
+  document.getElementById("stat-total").textContent = total;
+  document.getElementById("stat-working").textContent = working;
+  document.getElementById("stat-detected").textContent = detected;
+  document.getElementById("stat-offline").textContent = offline;
+  document.getElementById("stat-free").textContent = free;
+  document.getElementById("hdr-working").textContent = working;
+  document.getElementById("hdr-detected").textContent = detected;
+  document.getElementById("hdr-offline").textContent = offline;
+}
+
+/* =========================================================
+   IDENTIFY
+   ========================================================= */
+function setupDrop(zoneId, inputId, handler) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  zone.addEventListener("click", () => input.click());
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("dragover"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("dragover");
+    if (e.dataTransfer.files.length) handler(e.dataTransfer.files[0]);
+  });
+  input.addEventListener("change", () => {
+    if (input.files.length) handler(input.files[0]);
+  });
+}
+
+async function identifyFile(file) {
+  const result = document.getElementById("id-result");
+  const icon = document.getElementById("id-icon");
+  const title = document.getElementById("id-title");
+  const sub = document.getElementById("id-sub");
+  const sigs = document.getElementById("id-sigs");
+
+  result.classList.add("show");
+  title.textContent = "Scanning…";
+  sub.textContent = file.name + " · " + (file.size / 1024).toFixed(1) + " KB";
+  sigs.innerHTML = "";
+  icon.className = "result-icon unknown";
+  icon.textContent = "…";
+
+  try {
+    const buf = await file.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    /* Read as latin1-ish string for simple string search (first 2MB) */
+    const max = Math.min(bytes.length, 2 * 1024 * 1024);
+    let text = "";
+    for (let i = 0; i < max; i++) {
+      const c = bytes[i];
+      text += (c >= 32 && c < 127) ? String.fromCharCode(c) : " ";
+    }
+    text = text.toLowerCase();
+
+    const hits = [];
+    for (const sig of SIGNATURES) {
+      let matched = 0;
+      const found = [];
+      for (const s of sig.strings) {
+        if (text.includes(s.toLowerCase())) {
+          matched++;
+          found.push(s);
+        }
+      }
+      if (matched > 0) {
+        const conf = (matched / sig.strings.length) * sig.confidence;
+        hits.push({ ...sig, matched, found, conf });
+      }
+    }
+    hits.sort((a, b) => b.conf - a.conf);
+
+    if (!hits.length) {
+      icon.className = "result-icon unknown";
+      icon.textContent = "?";
+      title.textContent = "Unknown binary";
+      sub.textContent = "No known executor or malware signatures matched.";
+      sigs.innerHTML = `<div class="sig-item"><span class="sig-name">Tip</span><span style="color:var(--text3);font-size:12px">Packed / encrypted builds may not match. Try unpacking first.</span></div>`;
+      return;
+    }
+
+    const top = hits[0];
+    const isMal = !!top.malware;
+    icon.className = "result-icon " + (isMal ? "unknown" : "found");
+    icon.textContent = isMal ? "!" : "✓";
+    title.textContent = top.name;
+    sub.textContent = `Confidence ${(top.conf * 100).toFixed(0)}% · ${top.matched}/${top.strings.length} strings · ${file.name}`;
+
+    sigs.innerHTML = hits.slice(0, 8).map(h => `
+      <div class="sig-item">
+        <span class="sig-name" style="${h.malware ? 'color:var(--red)' : ''}">${h.name}</span>
+        <span class="sig-match">${h.found.join(", ")} · ${(h.conf * 100).toFixed(0)}%</span>
+      </div>
+    `).join("");
+  } catch (err) {
+    title.textContent = "Scan failed";
+    sub.textContent = String(err);
+  }
+}
+
+/* =========================================================
+   AI CLEANER
+   ========================================================= */
+document.querySelectorAll(".ai-opt").forEach(el => {
+  el.addEventListener("click", () => {
+    document.querySelectorAll(".ai-opt").forEach(x => x.classList.remove("selected"));
+    el.classList.add("selected");
+    el.querySelector("input").checked = true;
+  });
+});
+
+async function cleanFile(file) {
+  const mode = document.querySelector('input[name="clean-mode"]:checked').value;
+  const progress = document.getElementById("clean-progress");
+  const fill = document.getElementById("clean-fill");
+  const result = document.getElementById("clean-result");
+  const title = document.getElementById("clean-title");
+  const sub = document.getElementById("clean-sub");
+
+  result.classList.remove("show");
+  progress.classList.add("show");
+  fill.style.width = "15%";
+
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("mode", mode);
+  fd.append("name", file.name);
+
+  try {
+    fill.style.width = "40%";
+    const res = await fetch(CLEAN_API, { method: "POST", body: fd });
+    fill.style.width = "80%";
+
+    if (!res.ok) {
+      /* Demo fallback when API is not up */
+      await new Promise(r => setTimeout(r, 800));
+      fill.style.width = "100%";
+      progress.classList.remove("show");
+      result.classList.add("show");
+      title.textContent = "API not connected";
+      sub.textContent = `Would send ${file.name} as mode="${mode}" to ${CLEAN_API}. Wire the endpoint using the instructions below.`;
+      document.getElementById("clean-download").onclick = () => toast("No cleaned file — API offline", "error");
+      document.getElementById("clean-report").onclick = () => toast("Connect /api/clean first", "error");
+      return;
+    }
+
+    const data = await res.json();
+    fill.style.width = "100%";
+    setTimeout(() => progress.classList.remove("show"), 300);
+    result.classList.add("show");
+    title.textContent = data.ok ? "Clean complete" : "Clean failed";
+    sub.textContent = data.report || (data.ok ? "Ready" : "See server logs");
+    document.getElementById("clean-download").onclick = () => {
+      if (data.download_url) window.open(data.download_url, "_blank");
+      else toast("No download_url in response", "error");
+    };
+    document.getElementById("clean-report").onclick = () => {
+      alert(JSON.stringify(data, null, 2));
+    };
+  } catch (err) {
+    fill.style.width = "100%";
+    progress.classList.remove("show");
+    result.classList.add("show");
+    title.textContent = "Request failed";
+    sub.textContent = String(err) + " — is CLEAN_API reachable?";
+    document.getElementById("clean-download").onclick = () => {};
+  }
+}
+
+/* =========================================================
+   UI WIRING
+   ========================================================= */
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+  });
+});
+
+document.getElementById("search").addEventListener("input", e => {
+  searchQuery = e.target.value.trim();
+  renderAll();
+});
+
+document.querySelectorAll("#type-filters .filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#type-filters .filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentType = btn.dataset.filter;
+    renderAll();
+  });
+});
+
+document.querySelectorAll("#price-filters .filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#price-filters .filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentPrice = btn.dataset.price;
+    renderAll();
+  });
+});
+
+document.querySelectorAll(".view-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".view-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentView = btn.dataset.view;
+    renderAll();
+  });
+});
+
+setupDrop("id-drop", "id-file", identifyFile);
+setupDrop("clean-drop", "clean-file", cleanFile);
+
+function copyLink(url) {
+  navigator.clipboard.writeText(url).then(() => toast("Copied official URL", "success"));
+}
+
+function toast(msg, type) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast show " + (type || "");
+  setTimeout(() => el.classList.remove("show"), 2400);
+}
+
+/* boot */
+renderAll();
+</script>
+</body>
+</html>
