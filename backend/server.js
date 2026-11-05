@@ -35,9 +35,22 @@ const PORT = Number(process.env.PORT || 8790);
 const HOST = process.env.HOST || "0.0.0.0";
 const MAX_BYTES = Number(process.env.MAX_BYTES || 80 * 1024 * 1024); // 80 MB
 const OUT_DIR = path.join(__dirname, "out");
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const OPENAI_BASE = (process.env.OPENAI_BASE || "https://api.openai.com/v1").replace(/\/$/, "");
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
+// Accept OPENAI_* or GROQ_* (Groq is OpenAI-compatible at https://api.groq.com/openai/v1)
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY || "";
+const OPENAI_BASE = (
+  process.env.OPENAI_BASE ||
+  process.env.GROQ_BASE ||
+  (process.env.GROQ_API_KEY ? "https://api.groq.com/openai/v1" : "https://api.openai.com/v1")
+).replace(/\/$/, "");
+const OPENAI_MODEL =
+  process.env.OPENAI_MODEL ||
+  process.env.GROQ_MODEL ||
+  (
+    process.env.GROQ_API_KEY ||
+    (process.env.OPENAI_BASE || "").includes("groq.com")
+      ? "openai/gpt-oss-20b"
+      : "gpt-4o-mini"
+  );
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "*";
 // Public base URL for download links (Render sets RENDER_EXTERNAL_URL)
 const PUBLIC_BASE = (process.env.PUBLIC_BASE || process.env.RENDER_EXTERNAL_URL || `http://127.0.0.1:${PORT}`).replace(/\/$/, "");
