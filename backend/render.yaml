@@ -1,0 +1,34 @@
+# Render Blueprint — Shiv Cleaner API
+# https://dashboard.render.com → New → Blueprint → connect this repo/folder
+#
+# Or manual Web Service:
+#   Runtime: Node
+#   Build:   (empty — no deps)
+#   Start:   node server.js
+#   Env:     see below
+
+services:
+  - type: web
+    name: shiv-cleaner-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: docs/cleaner-api
+    buildCommand: "echo no-build"
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: MAX_BYTES
+        value: "83886080"
+      # Groq (recommended). Set GROQ_API_KEY as a secret in the dashboard.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_BASE
+        value: "https://api.groq.com/openai/v1"
+      - key: OPENAI_MODEL
+        value: "openai/gpt-oss-20b"
+      # OPENAI_API_KEY also works (same slot as GROQ_API_KEY in server.js)
